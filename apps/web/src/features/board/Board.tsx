@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable';
 import { BoardCard } from './BoardCard';
-import { api, type ProjectWithDerivedStatus } from '../../api/client';
+import { useStore } from '../../store';
 import type { DerivedStatusType } from '@parallel-ddl/shared';
 
 function formatDeadline(ddl: string, status: DerivedStatusType): string {
@@ -21,13 +23,27 @@ function mapStatus(status: DerivedStatusType): 'in_progress' | 'completed' | 'ov
 }
 
 export function Board() {
-  const [projects, setProjects] = useState<ProjectWithDerivedStatus[]>([]);
-
-  useEffect(() => {
-    api.projects.list().then(setProjects).catch(console.error);
-  }, []);
+  const projects = useStore((s) => s.projects);
+  const reorderProjects = useStore((s) => s.reorderProjects);
+  const [isDragging, setIsDragging] = useState(false);
 
   const visibleProjects = projects.filter((p) => p.status !== 'archived');
+
+  function handleDragEnd(event: DragEndEvent) {
+    setIsDragging(false);
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const ids = visibleProjects.map((p) => p.id);
+    const oldIdx = ids.indexOf(active.id as string);
+    const newIdx = ids.indexOf(over.id as string);
+    if (oldIdx === -1 || newIdx === -1) return;
+
+    const newIds = [...ids];
+    newIds.splice(oldIdx, 1);
+    newIds.splice(newIdx, 0, active.id as string);
+    reorderProjects(newIds);
+  }
 
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-stone-100 shrink-0 flex flex-col" style={{ height: '52%' }}>
@@ -43,23 +59,33 @@ export function Board() {
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 overflow-y-auto flex-1 min-h-0 pr-1 soft-scroll">
-        {visibleProjects.map((project) => (
-          <BoardCard
-            key={project.id}
-            title={project.title}
-            description={project.description}
-            status={mapStatus(project.status)}
-            deadline={formatDeadline(project.ddl, project.status)}
-            steps={project.steps.map((s) => ({
-              id: s.id,
-              content: s.content,
-              done: s.done,
-              hasSchedule: s.schedules.length > 0,
-            }))}
-          />
-        ))}
-      </div>
+      <DndContext
+        collisionDetection={closestCenter}
+        onDragStart={() => setIsDragging(true)}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext items={visibleProjects.map((p) => p.id)} strategy={rectSortingStrategy}>
+          <div className="grid grid-cols-2 gap-4 overflow-y-auto flex-1 min-h-0 pr-1 soft-scroll">
+            {visibleProjects.map((project) => (
+              <BoardCard
+                key={project.id}
+                projectId={project.id}
+                title={project.title}
+                description={project.description}
+                status={mapStatus(project.status)}
+                deadline={formatDeadline(project.ddl, project.status)}
+                steps={project.steps.map((s) => ({
+                  id: s.id,
+                  content: s.content,
+                  done: s.done,
+                  hasSchedule: s.schedules.length > 0,
+                }))}
+                isDragging={isDragging}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
     </div>
   );
 }

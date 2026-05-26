@@ -1,10 +1,19 @@
+import { useEffect } from 'react';
 import { CreateForm } from './features/create/CreateForm';
 import { Board } from './features/board/Board';
 import { ArchivedList } from './features/archive/ArchivedList';
 import { CalendarMonth } from './features/calendar/CalendarMonth';
 import { TodaySchedule } from './features/today/TodaySchedule';
+import { ToastContainer } from './components/Toast';
+import { useStore } from './store';
 
 function App() {
+  const fetchAll = useStore((s) => s.fetchAll);
+
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
+
   return (
     <div className="bg-cream-50 text-ink-light h-screen flex flex-col p-6 selection:bg-stone-200">
       {/* Header */}
@@ -33,6 +42,8 @@ function App() {
           </div>
         </section>
       </main>
+
+      <ToastContainer />
     </div>
   );
 }
