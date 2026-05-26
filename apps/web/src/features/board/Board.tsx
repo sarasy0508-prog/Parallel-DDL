@@ -72,6 +72,7 @@ export function Board() {
                 projectId={project.id}
                 title={project.title}
                 description={project.description}
+                ddl={project.ddl}
                 status={mapStatus(project.status)}
                 deadline={formatDeadline(project.ddl, project.status)}
                 steps={project.steps.map((s) => ({

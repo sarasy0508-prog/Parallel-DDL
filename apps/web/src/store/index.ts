@@ -28,12 +28,12 @@ export const useStore = create<Store>((set, get) => ({
   loading: true,
 
   fetchAll: async () => {
-    set({ loading: true });
+    const isInitial = get().loading;
     try {
       const data = await api.projects.list();
       set({ projects: data, loading: false });
     } catch {
-      showToast('加载项目失败');
+      if (isInitial) showToast('加载项目失败');
       set({ loading: false });
     }
   },

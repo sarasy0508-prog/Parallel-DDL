@@ -22,13 +22,14 @@ interface BoardCardProps {
   projectId: string;
   title: string;
   description: string;
+  ddl: string;
   status: CardStatus;
   deadline: string;
   steps: Step[];
   isDragging?: boolean;
 }
 
-export function BoardCard({ projectId, title, description, status, deadline, steps, isDragging }: BoardCardProps) {
+export function BoardCard({ projectId, title, description, ddl, status, deadline, steps, isDragging }: BoardCardProps) {
   const { toggleStep, addStep, deleteStep, updateStepContent, deleteProject, archiveProject, patchProject, reorderSteps } = useStore();
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: projectId });
   const style = { transform: CSS.Transform.toString(transform), transition };
@@ -37,6 +38,7 @@ export function BoardCard({ projectId, title, description, status, deadline, ste
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(title);
   const [editDesc, setEditDesc] = useState(description);
+  const [editDdl, setEditDdl] = useState(ddl.slice(0, 10));
   const [scheduleStepId, setScheduleStepId] = useState<string | null>(null);
 
   const doneCount = steps.filter((s) => s.done).length;
@@ -73,7 +75,7 @@ export function BoardCard({ projectId, title, description, status, deadline, ste
             </svg>
           </button>
           <button
-            onClick={() => { setEditTitle(title); setEditDesc(description); setEditing(true); }}
+            onClick={() => { setEditTitle(title); setEditDesc(description); setEditDdl(ddl.slice(0, 10)); setEditing(true); }}
             className="text-stone-400 hover:text-stone-700 p-0.5 rounded transition"
             title="编辑"
           >
@@ -109,10 +111,20 @@ export function BoardCard({ projectId, title, description, status, deadline, ste
             className="text-xs border border-stone-200 rounded px-2 py-1 outline-none focus:ring-1 focus:ring-mocha resize-none flex-1"
             placeholder="任务描述"
           />
+          <div>
+            <label className="block text-[10px] text-stone-500 mb-0.5">截止日期</label>
+            <input
+              type="date"
+              value={editDdl}
+              onChange={(e) => setEditDdl(e.target.value)}
+              className="w-full text-xs border border-stone-200 rounded px-2 py-1 outline-none focus:ring-1 focus:ring-mocha"
+            />
+          </div>
           <div className="flex gap-2">
             <button
               onClick={() => {
-                patchProject(projectId, { title: editTitle, description: editDesc });
+                const ddlISO = new Date(editDdl + 'T23:59:59.000Z').toISOString();
+                patchProject(projectId, { title: editTitle, description: editDesc, ddl: ddlISO });
                 setEditing(false);
               }}
               className="flex-1 bg-ink-muted text-cream-50 text-xs py-1.5 rounded-md"

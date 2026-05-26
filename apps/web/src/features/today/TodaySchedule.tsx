@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { format } from 'date-fns';
 import { useStore } from '../../store';
 
@@ -23,11 +22,9 @@ export function TodaySchedule({ selectedDate }: TodayScheduleProps) {
   const dateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null;
   const dateDisplay = selectedDate ? format(selectedDate, 'M 月 d 日') : '未选择日期';
 
-  const slotData = useMemo(() => {
-    if (!dateStr) return SLOTS.map((s) => ({ ...s, items: [] as ScheduleItem[] }));
-
-    return SLOTS.map((slot) => {
-      const items: ScheduleItem[] = [];
+  const slotData = SLOTS.map((slot) => {
+    const items: ScheduleItem[] = [];
+    if (dateStr) {
       for (const p of projects) {
         for (const step of p.steps) {
           for (const sch of step.schedules) {
@@ -37,9 +34,9 @@ export function TodaySchedule({ selectedDate }: TodayScheduleProps) {
           }
         }
       }
-      return { ...slot, items };
-    });
-  }, [projects, dateStr]);
+    }
+    return { ...slot, items };
+  });
 
   return (
     <div className="col-span-7 bg-white rounded-2xl p-4 shadow-sm border border-stone-100 flex flex-col min-h-0">
