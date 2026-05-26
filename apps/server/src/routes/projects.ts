@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { nanoid } from 'nanoid';
-import { StepSize } from '@parallel-ddl/shared';
+import { StepSize, ProjectStatus } from '@parallel-ddl/shared';
 import { getDB } from '../db/index.js';
 import { AppError, ok } from '../middleware/error.js';
 import { deriveStatus } from '../services/status.js';
@@ -21,6 +21,7 @@ const PatchProjectInput = z.object({
   description: z.string().max(500).optional(),
   ddl: z.string().datetime().optional(),
   order: z.number().int().nonnegative().optional(),
+  status: ProjectStatus.optional(),
 });
 
 const ReorderInput = z.object({
@@ -87,6 +88,7 @@ projects.patch(
     if (input.description !== undefined) project.description = input.description;
     if (input.ddl !== undefined) project.ddl = input.ddl;
     if (input.order !== undefined) project.order = input.order;
+    if (input.status !== undefined) project.status = input.status;
 
     await db.write();
     return ok(c, project);
