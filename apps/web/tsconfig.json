@@ -4,8 +4,9 @@
     "jsx": "react-jsx",
     "paths": {
       "@web/*": ["./src/*"],
-      "@parallel-ddl/shared": ["../../packages/shared/src/index.ts"]
+      "@parallel-ddl/shared": ["../../packages/shared/src/index.ts"],
+      "@server/*": ["../server/src/*"]
     }
   },
-  "include": ["src", "../../packages/shared/src"]
+  "include": ["src", "../../packages/shared/src", "../server/src"]
 }

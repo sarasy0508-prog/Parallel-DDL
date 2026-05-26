@@ -3,3 +3,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@layer utilities {
+  .soft-scroll::-webkit-scrollbar {
+    width: 4px;
+  }
+  .soft-scroll::-webkit-scrollbar-thumb {
+    background: #D6D3D0;
+    border-radius: 2px;
+  }
+  .soft-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}

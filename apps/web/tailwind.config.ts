@@ -25,6 +25,15 @@ export default {
       fontFamily: {
         sans: ['"Plus Jakarta Sans"', '"PingFang SC"', 'system-ui', 'sans-serif'],
       },
+      keyframes: {
+        shimmer: {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
+        },
+      },
+      animation: {
+        shimmer: 'shimmer 1.6s infinite',
+      },
     },
   },
   plugins: [],

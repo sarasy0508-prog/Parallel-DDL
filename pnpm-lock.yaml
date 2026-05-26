@@ -53,6 +53,9 @@ importers:
       autoprefixer:
         specifier: ^10.5.0
         version: 10.5.0(postcss@8.5.15)
+      hono:
+        specifier: ^4.12.23
+        version: 4.12.23
       postcss:
         specifier: ^8.5.15
         version: 8.5.15
