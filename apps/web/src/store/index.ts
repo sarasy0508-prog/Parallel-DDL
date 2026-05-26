@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { api, type ProjectWithDerivedStatus } from '../api/client';
 import { showToast } from '../components/Toast';
+import type { ScheduleType } from '@parallel-ddl/shared';
 
 interface Store {
   projects: ProjectWithDerivedStatus[];
@@ -18,6 +19,8 @@ interface Store {
   createProject: (data: { title: string; description?: string; ddl: string; stepSize: string }) => Promise<string | undefined>;
   aiBreakdown: (projectId: string, data: { title: string; description?: string; ddl: string; stepSize: string }) => Promise<string[] | undefined>;
   confirmBreakdown: (projectId: string, steps: string[]) => Promise<void>;
+  updateStepSchedules: (stepId: string, schedules: ScheduleType[]) => Promise<void>;
+  unarchiveProject: (id: string) => Promise<void>;
 }
 
 export const useStore = create<Store>((set, get) => ({
@@ -162,6 +165,24 @@ export const useStore = create<Store>((set, get) => ({
       await get().fetchAll();
     } catch {
       showToast('确认拆解失败');
+    }
+  },
+
+  updateStepSchedules: async (stepId, schedules) => {
+    try {
+      await api.steps.patch(stepId, { schedules });
+      await get().fetchAll();
+    } catch {
+      showToast('更新安排失败');
+    }
+  },
+
+  unarchiveProject: async (id) => {
+    try {
+      await api.projects.unarchive(id);
+      await get().fetchAll();
+    } catch {
+      showToast('取消归档失败');
     }
   },
 

@@ -79,6 +79,7 @@ export function Board() {
                   content: s.content,
                   done: s.done,
                   hasSchedule: s.schedules.length > 0,
+                  schedules: s.schedules,
                 }))}
                 isDragging={isDragging}
               />

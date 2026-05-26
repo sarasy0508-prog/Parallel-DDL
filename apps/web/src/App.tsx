@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { CreateForm } from './features/create/CreateForm';
 import { Board } from './features/board/Board';
 import { ArchivedList } from './features/archive/ArchivedList';
@@ -9,6 +9,7 @@ import { useStore } from './store';
 
 function App() {
   const fetchAll = useStore((s) => s.fetchAll);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
 
   useEffect(() => {
     fetchAll();
@@ -37,8 +38,8 @@ function App() {
         <section className="col-span-8 flex flex-col gap-5 min-h-0">
           <Board />
           <div className="grid grid-cols-12 gap-5 flex-1 min-h-0">
-            <CalendarMonth />
-            <TodaySchedule />
+            <CalendarMonth selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+            <TodaySchedule selectedDate={selectedDate} />
           </div>
         </section>
       </main>

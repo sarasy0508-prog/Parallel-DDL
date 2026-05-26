@@ -2,18 +2,22 @@ import { useState, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
+import type { ScheduleType } from '@parallel-ddl/shared';
+
 interface StepRowProps {
   id: string;
   content: string;
   done: boolean;
   isOverdue?: boolean;
   hasSchedule?: boolean;
+  schedules?: ScheduleType[];
   onToggle: (done: boolean) => void;
   onDelete: () => void;
   onUpdateContent: (content: string) => void;
+  onOpenSchedule?: () => void;
 }
 
-export function StepRow({ id, content, done, isOverdue, hasSchedule, onToggle, onDelete, onUpdateContent }: StepRowProps) {
+export function StepRow({ id, content, done, isOverdue, hasSchedule, onToggle, onDelete, onUpdateContent, onOpenSchedule }: StepRowProps) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
   const style = { transform: CSS.Transform.toString(transform), transition };
   const [editing, setEditing] = useState(false);
@@ -78,6 +82,7 @@ export function StepRow({ id, content, done, isOverdue, hasSchedule, onToggle, o
       )}
       <div className="opacity-0 group-hover/step:opacity-100 flex items-center gap-1 transition-opacity">
         <button
+          onClick={onOpenSchedule}
           className={`p-0.5 ${hasSchedule ? 'text-mocha' : 'text-stone-400 hover:text-mocha'}`}
         >
           <svg width="11" height="11" viewBox="0 0 24 24" fill={hasSchedule ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5">

@@ -1,11 +1,11 @@
-const MOCK_ARCHIVED = [
-  { title: '季度财报对接', time: '5 天前' },
-  { title: '云原生架构评审', time: '上周' },
-  { title: '课程展示文稿准备', time: '2 周前' },
-  { title: '读书笔记整理', time: '3 周前' },
-];
+import { useStore } from '../../store';
 
 export function ArchivedList() {
+  const projects = useStore((s) => s.projects);
+  const { archiveProject } = useStore();
+
+  const archived = projects.filter((p) => p.status === 'archived');
+
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-stone-100 flex-1 flex flex-col min-h-0">
       <div className="flex items-center justify-between mb-3 shrink-0">
@@ -15,21 +15,33 @@ export function ArchivedList() {
             03 / 已归档
           </h2>
         </div>
-        <span className="text-xs italic text-stone-400">共 {MOCK_ARCHIVED.length} 个</span>
+        <span className="text-xs italic text-stone-400">共 {archived.length} 个</span>
       </div>
       <div className="soft-scroll overflow-y-auto flex-1 min-h-0">
-        {MOCK_ARCHIVED.map((item, i) => (
-          <div
-            key={item.title}
-            className={`py-2 flex justify-between items-center ${
-              i < MOCK_ARCHIVED.length - 1 ? 'border-b border-stone-100' : ''
-            }`}
-          >
-            <span className="text-sm text-stone-400 font-medium line-through">{item.title}</span>
-            <span className="text-[11px] text-stone-400 italic">{item.time}</span>
-          </div>
-        ))}
+        {archived.length === 0 ? (
+          <p className="text-xs text-stone-400 italic text-center py-4">暂无归档任务</p>
+        ) : (
+          archived.map((item) => (
+            <ArchivedItem key={item.id} id={item.id} title={item.title} />
+          ))
+        )}
       </div>
+    </div>
+  );
+}
+
+function ArchivedItem({ id, title }: { id: string; title: string }) {
+  const unarchive = useStore((s) => s.unarchiveProject);
+
+  return (
+    <div className="py-2 border-b border-stone-100 flex justify-between items-center group">
+      <span className="text-sm text-stone-400 font-medium line-through">{title}</span>
+      <button
+        onClick={() => unarchive(id)}
+        className="text-[10px] text-stone-400 hover:text-mocha opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        取消归档
+      </button>
     </div>
   );
 }

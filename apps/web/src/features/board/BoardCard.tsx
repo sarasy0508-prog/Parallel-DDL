@@ -5,6 +5,8 @@ import { CSS } from '@dnd-kit/utilities';
 import { Skeleton } from '../../components/Skeleton';
 import { StepRow } from './StepRow';
 import { useStore } from '../../store';
+import { ScheduleModal } from '../calendar/ScheduleModal';
+import type { ScheduleType } from '@parallel-ddl/shared';
 
 type CardStatus = 'in_progress' | 'completed' | 'overdue' | 'loading';
 
@@ -13,6 +15,7 @@ interface Step {
   content: string;
   done: boolean;
   hasSchedule?: boolean;
+  schedules?: ScheduleType[];
 }
 
 interface BoardCardProps {
@@ -34,6 +37,7 @@ export function BoardCard({ projectId, title, description, status, deadline, ste
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(title);
   const [editDesc, setEditDesc] = useState(description);
+  const [scheduleStepId, setScheduleStepId] = useState<string | null>(null);
 
   const doneCount = steps.filter((s) => s.done).length;
   const totalCount = steps.length;
@@ -194,6 +198,7 @@ export function BoardCard({ projectId, title, description, status, deadline, ste
                 onToggle={(done) => toggleStep(projectId, step.id, done)}
                 onDelete={() => deleteStep(projectId, step.id)}
                 onUpdateContent={(content) => updateStepContent(step.id, content)}
+                onOpenSchedule={() => setScheduleStepId(step.id)}
               />
             ))}
             {!isCompleted && (
@@ -260,6 +265,14 @@ export function BoardCard({ projectId, title, description, status, deadline, ste
             </button>
           )}
         </div>
+      )}
+
+      {scheduleStepId && (
+        <ScheduleModal
+          stepId={scheduleStepId}
+          schedules={steps.find((s) => s.id === scheduleStepId)?.schedules ?? []}
+          onClose={() => setScheduleStepId(null)}
+        />
       )}
     </div>
   );
