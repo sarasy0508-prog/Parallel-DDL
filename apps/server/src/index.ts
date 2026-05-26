@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
@@ -7,6 +8,7 @@ import { AppError, errorHandler, ok } from './middleware/error.js';
 import { logger } from './middleware/logger.js';
 import projects from './routes/projects.js';
 import steps from './routes/steps.js';
+import ai from './routes/ai.js';
 
 const app = new Hono();
 
@@ -44,6 +46,7 @@ app.post(
 
 app.route('/', projects);
 app.route('/', steps);
+app.route('/', ai);
 
 async function main() {
   await initDB();

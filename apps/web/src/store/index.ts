@@ -15,6 +15,9 @@ interface Store {
   patchProject: (id: string, data: { title?: string; description?: string; ddl?: string }) => Promise<void>;
   reorderProjects: (orderedIds: string[]) => Promise<void>;
   reorderSteps: (projectId: string, orderedIds: string[]) => Promise<void>;
+  createProject: (data: { title: string; description?: string; ddl: string; stepSize: string }) => Promise<string | undefined>;
+  aiBreakdown: (projectId: string, data: { title: string; description?: string; ddl: string; stepSize: string }) => Promise<string[] | undefined>;
+  confirmBreakdown: (projectId: string, steps: string[]) => Promise<void>;
 }
 
 export const useStore = create<Store>((set, get) => ({
@@ -126,6 +129,39 @@ export const useStore = create<Store>((set, get) => ({
     } catch {
       set({ projects: prev });
       showToast('排序失败，已回滚');
+    }
+  },
+
+  createProject: async (data) => {
+    try {
+      const project = await api.projects.create(data);
+      await get().fetchAll();
+      return project.id;
+    } catch {
+      showToast('创建项目失败');
+      return undefined;
+    }
+  },
+
+  aiBreakdown: async (_projectId, data) => {
+    try {
+      const result = await api.ai.breakdown(data);
+      return result.steps;
+    } catch {
+      showToast('AI 拆解失败，可手动添加步骤');
+      return undefined;
+    }
+  },
+
+  confirmBreakdown: async (projectId, steps) => {
+    try {
+      for (const content of steps) {
+        await api.steps.create(projectId, { content });
+      }
+      await api.projects.patch(projectId, { status: 'in_progress' });
+      await get().fetchAll();
+    } catch {
+      showToast('确认拆解失败');
     }
   },
 

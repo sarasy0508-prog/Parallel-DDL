@@ -35,6 +35,10 @@ export const api = {
     reorder: (orderedIds: string[]) =>
       apiFetch<{ orderedIds: string[] }>('/api/projects/reorder', { method: 'POST', body: JSON.stringify({ orderedIds }) }),
   },
+  ai: {
+    breakdown: (body: { title: string; description?: string; ddl: string; stepSize: string }) =>
+      apiFetch<{ steps: string[] }>('/api/ai/breakdown', { method: 'POST', body: JSON.stringify(body) }),
+  },
   steps: {
     create: (projectId: string, body: { content: string }) =>
       apiFetch<ProjectType['steps'][number]>(`/api/projects/${projectId}/steps`, { method: 'POST', body: JSON.stringify(body) }),
