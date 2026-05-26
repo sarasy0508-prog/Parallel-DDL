@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "paths": {
+      "@web/*": ["./src/*"],
+      "@parallel-ddl/shared": ["../../packages/shared/src/index.ts"]
+    }
+  },
+  "include": ["src", "../../packages/shared/src"]
+}
