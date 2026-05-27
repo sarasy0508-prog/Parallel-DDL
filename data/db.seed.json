@@ -1,0 +1,97 @@
+{
+  "meta": { "version": 1 },
+  "projects": [
+    {
+      "id": "p_seed_001",
+      "title": "线性代数期末复习",
+      "description": "重点复习特征值、矩阵分解、线性变换",
+      "ddl": "2026-06-10T23:59:59.000Z",
+      "createdAt": "2026-05-18T08:00:00.000Z",
+      "status": "in_progress",
+      "order": 0,
+      "stepSize": "25min",
+      "steps": [
+        {
+          "id": "s_seed_001",
+          "content": "整理特征值与特征向量公式",
+          "done": true,
+          "order": 0,
+          "schedules": [{ "date": "2026-05-21", "slot": "morning" }]
+        },
+        {
+          "id": "s_seed_002",
+          "content": "做课后习题第5-8章",
+          "done": false,
+          "order": 1,
+          "schedules": [{ "date": "2026-05-22", "slot": "evening" }]
+        },
+        {
+          "id": "s_seed_003",
+          "content": "整理错题并复盘",
+          "done": false,
+          "order": 2,
+          "schedules": []
+        }
+      ]
+    },
+    {
+      "id": "p_seed_002",
+      "title": "数据结构小组作业",
+      "description": "实现红黑树并撰写实验报告",
+      "ddl": "2026-05-24T23:59:59.000Z",
+      "createdAt": "2026-05-15T10:00:00.000Z",
+      "status": "in_progress",
+      "order": 1,
+      "stepSize": "45min",
+      "steps": [
+        {
+          "id": "s_seed_004",
+          "content": "阅读算法导论第13章",
+          "done": true,
+          "order": 0,
+          "schedules": [{ "date": "2026-05-16", "slot": "morning" }]
+        },
+        {
+          "id": "s_seed_005",
+          "content": "编写红黑树插入和删除",
+          "done": true,
+          "order": 1,
+          "schedules": [{ "date": "2026-05-18", "slot": "noon" }]
+        },
+        {
+          "id": "s_seed_006",
+          "content": "撰写实验报告",
+          "done": true,
+          "order": 2,
+          "schedules": []
+        }
+      ]
+    },
+    {
+      "id": "p_seed_003",
+      "title": "英语演讲准备",
+      "description": "Topic: AI in Education",
+      "ddl": "2026-06-05T14:00:00.000Z",
+      "createdAt": "2026-05-20T09:00:00.000Z",
+      "status": "completed",
+      "order": 2,
+      "stepSize": "10min",
+      "steps": [
+        {
+          "id": "s_seed_007",
+          "content": "确定演讲大纲",
+          "done": true,
+          "order": 0,
+          "schedules": [{ "date": "2026-05-20", "slot": "noon" }]
+        },
+        {
+          "id": "s_seed_008",
+          "content": "写逐字稿并练习朗读",
+          "done": true,
+          "order": 1,
+          "schedules": [{ "date": "2026-05-23", "slot": "evening" }]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>试图在DDL中存活</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', "PingFang SC", "Hiragino Sans GB", sans-serif; }
+        html, body { height: 100%; overflow: hidden; }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .skeleton {
+            background: linear-gradient(90deg, #EFEEE8 25%, #F8F7F2 50%, #EFEEE8 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.6s infinite;
+        }
+
+        @keyframes pulse-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+        .pulse-soft { animation: pulse-soft 2.2s infinite; }
+
+        .step-row .drag-handle, .step-row .step-actions { opacity: 0; transition: opacity 150ms; }
+        .step-row:hover .drag-handle, .step-row:hover .step-actions { opacity: 1; }
+        .board-card .card-actions { opacity: 0; transition: opacity 150ms; }
+        .board-card:hover .card-actions { opacity: 1; }
+
+        .soft-scroll::-webkit-scrollbar { width: 4px; }
+        .soft-scroll::-webkit-scrollbar-thumb { background: #D6D3D0; border-radius: 2px; }
+        .soft-scroll::-webkit-scrollbar-track { background: transparent; }
+    </style>
+</head>
+<body class="bg-[#FAF9F5] text-[#2D2B2A] h-screen flex flex-col p-6 selection:bg-stone-200">
+
+    <!-- Header:标题左,副标语右 -->
+    <header class="max-w-[1400px] w-full mx-auto mb-4 flex items-baseline justify-between shrink-0">
+        <h1 class="text-2xl font-medium text-[#1F1E1D] tracking-tight">试图在DDL中存活</h1>
+        <div class="flex items-center gap-4 text-sm text-stone-500">
+            <span>完成比完美更重要✅</span>
+            <span>再不开始行动就没法睡觉啦💤</span>
+        </div>
+    </header>
+
+    <!-- Main:占满剩余高度 -->
+    <main class="max-w-[1400px] w-full mx-auto grid grid-cols-12 gap-5 flex-1 min-h-0">
+
+        <!-- 左栏:01 + 03,flex-col 等距 -->
+        <section class="col-span-4 flex flex-col gap-5 min-h-0">
+
+            <!-- 01 任务拆解 -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-100 shrink-0">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="w-1.5 h-1.5 bg-emerald-700 rounded-full"></span>
+                    <h2 class="text-xs font-semibold uppercase tracking-wider text-stone-400">01 / 任务拆解</h2>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-stone-500 mb-1">任务名称</label>
+                        <input type="text" placeholder="比如:毕业论文初稿撰写" class="w-full bg-stone-50/50 border border-stone-200/80 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#8E867E] text-stone-800">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-stone-500 mb-1">任务描述</label>
+                        <textarea rows="2" placeholder="写下目前的整体思绪..." class="w-full bg-stone-50/50 border border-stone-200/80 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#8E867E] text-stone-800 resize-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-stone-500 mb-1">截止日期</label>
+                        <input type="date" class="w-full bg-stone-50/50 border border-stone-200/80 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#8E867E] text-stone-800">
+                    </div>
+
+                    <!-- 每个步骤的大致时长 -->
+                    <div>
+                        <label class="block text-xs font-medium text-stone-500 mb-1.5">每个步骤的大致时长</label>
+                        <div class="grid grid-cols-4 gap-1.5">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="step-size" class="peer sr-only">
+                                <div class="text-center text-xs py-1.5 rounded-md bg-stone-50 border border-stone-200/80 text-stone-500 peer-checked:bg-[#8E867E] peer-checked:text-white peer-checked:border-[#8E867E] transition">5 分钟</div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="step-size" class="peer sr-only">
+                                <div class="text-center text-xs py-1.5 rounded-md bg-stone-50 border border-stone-200/80 text-stone-500 peer-checked:bg-[#8E867E] peer-checked:text-white peer-checked:border-[#8E867E] transition">10 分钟</div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="step-size" checked class="peer sr-only">
+                                <div class="text-center text-xs py-1.5 rounded-md bg-stone-50 border border-stone-200/80 text-stone-500 peer-checked:bg-[#8E867E] peer-checked:text-white peer-checked:border-[#8E867E] transition">25 分钟</div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="step-size" class="peer sr-only">
+                                <div class="text-center text-xs py-1.5 rounded-md bg-stone-50 border border-stone-200/80 text-stone-500 peer-checked:bg-[#8E867E] peer-checked:text-white peer-checked:border-[#8E867E] transition">45 分钟</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button class="w-full bg-[#323130] hover:bg-[#484745] text-[#FAF9F5] text-xs font-medium py-2.5 rounded-lg tracking-wider transition duration-150">
+                        从最简单的第一步开始吧!
+                    </button>
+                </div>
+            </div>
+
+            <!-- 03 已归档(flex-1 填充剩余空间,内容滚动) -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-100 flex-1 flex flex-col min-h-0">
+                <div class="flex items-center justify-between mb-3 shrink-0">
+                    <div class="flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span>
+                        <h2 class="text-xs font-semibold uppercase tracking-wider text-stone-400">03 / 已归档</h2>
+                    </div>
+                    <span class="text-xs italic text-stone-400">共 4 个</span>
+                </div>
+                <div class="soft-scroll overflow-y-auto flex-1 min-h-0">
+                    <div class="py-2 border-b border-stone-100 flex justify-between items-center">
+                        <span class="text-sm text-stone-400 font-medium line-through">季度财报对接</span>
+                        <span class="text-[11px] text-stone-400 italic">5 天前</span>
+                    </div>
+                    <div class="py-2 border-b border-stone-100 flex justify-between items-center">
+                        <span class="text-sm text-stone-400 font-medium line-through">云原生架构评审</span>
+                        <span class="text-[11px] text-stone-400 italic">上周</span>
+                    </div>
+                    <div class="py-2 border-b border-stone-100 flex justify-between items-center">
+                        <span class="text-sm text-stone-400 font-medium line-through">课程展示文稿准备</span>
+                        <span class="text-[11px] text-stone-400 italic">2 周前</span>
+                    </div>
+                    <div class="py-2 flex justify-between items-center">
+                        <span class="text-sm text-stone-400 font-medium line-through">读书笔记整理</span>
+                        <span class="text-[11px] text-stone-400 italic">3 周前</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 右栏:02 + (04 + 05),flex-col 等距 -->
+        <section class="col-span-8 flex flex-col gap-5 min-h-0">
+
+            <!-- 02 项目看板:固定高度,内部竖滚 -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-100 shrink-0 flex flex-col" style="height: 52%;">
+                <div class="flex items-center justify-between mb-4 shrink-0">
+                    <div class="flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 bg-emerald-700 rounded-full"></span>
+                        <h2 class="text-xs font-semibold uppercase tracking-wider text-stone-400">02 / 项目看板</h2>
+                    </div>
+                    <span class="text-xs italic text-stone-400">并行进行中 · 4 个看板</span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 soft-scroll overflow-y-auto flex-1 min-h-0 pr-1">
+
+                    <!-- 卡片 A:进行中 -->
+                    <div class="board-card group bg-[#F6F5F0] p-4 rounded-xl border border-stone-200/50 flex flex-col min-h-[300px] relative">
+                        <div class="card-actions absolute top-2.5 right-2.5 flex items-center gap-1">
+                            <button class="text-stone-400 hover:text-stone-700 p-0.5 rounded transition" title="拖拽重排">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.2"/><circle cx="15" cy="6" r="1.2"/><circle cx="9" cy="12" r="1.2"/><circle cx="15" cy="12" r="1.2"/><circle cx="9" cy="18" r="1.2"/><circle cx="15" cy="18" r="1.2"/></svg>
+                            </button>
+                            <button class="text-stone-400 hover:text-stone-700 p-0.5 rounded transition" title="编辑">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            </button>
+                            <button class="text-stone-400 hover:text-red-500 p-0.5 rounded transition" title="删除">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                            </button>
+                        </div>
+
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center mb-1.5 pr-16">
+                                <span class="text-[10px] tracking-wider uppercase text-emerald-700 font-medium">· 进行中</span>
+                                <span class="text-[11px] text-[#8E867E]">3 天后截止</span>
+                            </div>
+                            <h3 class="font-semibold text-stone-800 text-sm">算法模块功能优化</h3>
+                            <p class="text-[11px] text-stone-400 mt-0.5 mb-3">重构核心评估指标采集逻辑,优化基准数据流</p>
+
+                            <div class="space-y-1">
+                                <div class="step-row flex items-center gap-2 py-0.5">
+                                    <span class="drag-handle text-stone-400 cursor-grab text-xs select-none">⋮⋮</span>
+                                    <input type="checkbox" checked class="accent-[#8E867E] rounded shrink-0">
+                                    <span class="flex-1 text-xs text-stone-400 line-through">梳理并对齐评估指标</span>
+                                    <div class="step-actions flex items-center gap-1">
+                                        <button class="text-stone-400 hover:text-[#8E867E] p-0.5"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></button>
+                                        <button class="text-stone-400 hover:text-red-500 p-0.5"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+                                    </div>
+                                </div>
+                                <div class="step-row flex items-center gap-2 py-0.5">
+                                    <span class="drag-handle text-stone-400 cursor-grab text-xs select-none">⋮⋮</span>
+                                    <input type="checkbox" class="accent-[#8E867E] rounded shrink-0">
+                                    <span class="flex-1 text-xs text-stone-700">搭建本地基准测试环境</span>
+                                    <div class="step-actions flex items-center gap-1">
+                                        <button class="text-[#8E867E] p-0.5"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/></svg></button>
+                                        <button class="text-stone-400 hover:text-red-500 p-0.5"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+                                    </div>
+                                </div>
+                                <div class="step-row flex items-center gap-2 py-0.5">
+                                    <span class="drag-handle text-stone-400 cursor-grab text-xs select-none">⋮⋮</span>
+                                    <input type="checkbox" class="accent-[#8E867E] rounded shrink-0">
+                                    <span class="flex-1 text-xs text-stone-700">完成数据源预处理代码性能重构</span>
+                                    <div class="step-actions flex items-center gap-1">
+                                        <button class="text-stone-400 hover:text-[#8E867E] p-0.5"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></button>
+                                        <button class="text-stone-400 hover:text-red-500 p-0.5"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+                                    </div>
+                                </div>
+                                <button class="w-full mt-1.5 text-[11px] text-stone-400 hover:text-stone-600 italic py-1 border border-dashed border-stone-300 rounded-md transition">+ 添加步骤</button>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 pt-2 border-t border-stone-200/40">
+                            <div class="flex justify-between text-[11px] text-stone-400 mb-1">
+                                <span>进度</span><span>1 / 3 已完成</span>
+                            </div>
+                            <div class="w-full bg-stone-200 h-1 rounded-full overflow-hidden">
+                                <div class="bg-[#8E867E] h-full" style="width: 33.3%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 卡片 B:已完成 -->
+                    <div class="board-card group bg-[#F5F6F0] p-4 rounded-xl border border-stone-200/50 flex flex-col min-h-[300px] relative">
+                        <div class="card-actions absolute top-2.5 right-2.5 flex items-center gap-1">
+                            <button class="text-stone-400 hover:text-stone-700 p-0.5 rounded transition"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                            <button class="text-stone-400 hover:text-red-500 p-0.5 rounded transition"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                        </div>
+
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center mb-1.5 pr-14">
+                                <span class="text-[10px] tracking-wider uppercase text-stone-500 font-medium">✓ 已完成</span>
+                                <span class="text-[11px] text-stone-400 italic">温柔抵达</span>
+                            </div>
+                            <h3 class="font-semibold text-stone-500 text-sm line-through">视觉风格白皮书编写</h3>
+                            <p class="text-[11px] text-stone-400 mt-0.5 mb-3 line-through">整理设计原子,完成跨平台视觉一致性输出</p>
+
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2 py-0.5">
+                                    <span class="text-stone-300 text-xs select-none">⋮⋮</span>
+                                    <input type="checkbox" checked class="accent-[#8E867E] rounded">
+                                    <span class="flex-1 text-xs text-stone-400 line-through">收集跨端界面的视觉风格差异</span>
+                                </div>
+                                <div class="flex items-center gap-2 py-0.5">
+                                    <span class="text-stone-300 text-xs select-none">⋮⋮</span>
+                                    <input type="checkbox" checked class="accent-[#8E867E] rounded">
+                                    <span class="flex-1 text-xs text-stone-400 line-through">抽象出底层的字号与颜色梯度</span>
+                                </div>
+                                <div class="flex items-center gap-2 py-0.5">
+                                    <span class="text-stone-300 text-xs select-none">⋮⋮</span>
+                                    <input type="checkbox" checked class="accent-[#8E867E] rounded">
+                                    <span class="flex-1 text-xs text-stone-400 line-through">在组件库中定义原子设计资产</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 pt-2 border-t border-stone-200/40 space-y-1.5">
+                            <div class="flex justify-between text-[11px] text-stone-400">
+                                <span>进度</span><span>3 / 3 已完成</span>
+                            </div>
+                            <div class="w-full bg-stone-200 h-1 rounded-full overflow-hidden">
+                                <div class="bg-[#8E867E] h-full" style="width: 100%"></div>
+                            </div>
+                            <button class="w-full bg-[#FAF9F5] hover:bg-stone-100 border border-stone-300/70 text-stone-600 text-[11px] font-medium py-1.5 rounded-md tracking-wider transition flex items-center justify-center gap-1.5">
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg>
+                                归档此任务
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 卡片 C:已逾期(滚动后可见) -->
+                    <div class="board-card group bg-red-50/40 p-4 rounded-xl border border-red-200/60 flex flex-col min-h-[300px] relative">
+                        <div class="card-actions absolute top-2.5 right-2.5 flex items-center gap-1">
+                            <button class="text-stone-400 hover:text-stone-700 p-0.5 rounded transition"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                            <button class="text-stone-400 hover:text-red-500 p-0.5 rounded transition"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                        </div>
+
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center mb-1.5 pr-14">
+                                <span class="text-[10px] tracking-wider uppercase text-red-600 font-medium">⚠ 已逾期</span>
+                                <span class="text-[11px] text-red-500 font-medium">已过期 2 天</span>
+                            </div>
+                            <h3 class="font-semibold text-red-700 text-sm">⚠️ 数据库迁移上线</h3>
+                            <p class="text-[11px] text-red-400/80 mt-0.5 mb-3">将旧表结构平滑迁移至新版,支持灰度发布</p>
+
+                            <div class="space-y-1">
+                                <div class="step-row flex items-center gap-2 py-0.5">
+                                    <span class="drag-handle text-stone-400 cursor-grab text-xs select-none">⋮⋮</span>
+                                    <input type="checkbox" checked class="accent-[#8E867E] rounded">
+                                    <span class="flex-1 text-xs text-stone-400 line-through">本地预演验证</span>
+                                </div>
+                                <div class="step-row flex items-center gap-2 py-0.5">
+                                    <span class="drag-handle text-stone-400 cursor-grab text-xs select-none">⋮⋮</span>
+                                    <input type="checkbox" class="accent-red-500 rounded">
+                                    <span class="flex-1 text-xs text-red-700">线上灰度发布</span>
+                                </div>
+                                <button class="w-full mt-1.5 text-[11px] text-stone-400 hover:text-stone-600 italic py-1 border border-dashed border-stone-300 rounded-md transition">+ 添加步骤</button>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 pt-2 border-t border-red-200/40">
+                            <div class="flex justify-between text-[11px] text-red-400 mb-1">
+                                <span>进度</span><span>1 / 2 已完成</span>
+                            </div>
+                            <div class="w-full bg-red-100 h-1 rounded-full overflow-hidden">
+                                <div class="bg-red-400 h-full" style="width: 50%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 卡片 D:AI 拆解中(滚动后可见) -->
+                    <div class="board-card bg-[#F6F5F0] p-4 rounded-xl border border-stone-200/50 flex flex-col min-h-[300px]">
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <span class="text-[10px] tracking-wider uppercase text-[#8E867E] font-medium pulse-soft">· AI 拆解中</span>
+                                <span class="text-[11px] text-stone-400">7 天后截止</span>
+                            </div>
+                            <h3 class="font-semibold text-stone-800 text-sm">期末复习计划</h3>
+                            <p class="text-[11px] text-stone-400 mt-0.5 mb-3">线代 / 概率论 / 算法,三门课的系统性梳理</p>
+
+                            <div class="space-y-2">
+                                <div class="skeleton h-3 rounded w-full"></div>
+                                <div class="skeleton h-3 rounded w-5/6"></div>
+                                <div class="skeleton h-3 rounded w-4/6"></div>
+                                <div class="skeleton h-3 rounded w-3/4"></div>
+                            </div>
+                        </div>
+                        <div class="mt-3 flex items-center gap-2 text-[11px] text-stone-400 italic">
+                            <svg class="animate-spin" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+                            DeepSeek 正在为你温柔地拆解...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 04 日历 + 05 当日安排(flex-1 填充剩余) -->
+            <div class="grid grid-cols-12 gap-5 flex-1 min-h-0">
+
+                <!-- 04 日历 -->
+                <div class="col-span-5 bg-white rounded-2xl p-4 shadow-sm border border-stone-100 flex flex-col min-h-0">
+                    <div class="flex justify-between items-center mb-3 shrink-0">
+                        <div class="flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span>
+                            <h3 class="text-xs font-semibold uppercase tracking-wider text-stone-400">04 / 日历</h3>
+                        </div>
+                        <span class="text-[11px] text-stone-500">2026 年 5 月</span>
+                    </div>
+
+                    <div class="grid grid-cols-7 gap-0.5 text-center text-[10px] font-semibold text-stone-400 mb-1">
+                        <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+                    </div>
+                    <div class="grid grid-cols-7 gap-0.5 text-center text-[10px] text-stone-600">
+                        <span class="p-0.5 text-stone-300">26</span>
+                        <span class="p-0.5 text-stone-300">27</span>
+                        <span class="p-0.5 text-stone-300">28</span>
+                        <span class="p-0.5 text-stone-300">29</span>
+                        <span class="p-0.5 text-stone-300">30</span>
+                        <span class="p-0.5">1</span>
+                        <span class="p-0.5">2</span>
+
+                        <span class="p-0.5">3</span>
+                        <span class="p-0.5">4</span>
+                        <span class="p-0.5 font-bold text-red-600 bg-red-50 rounded relative">5<span class="absolute -top-0.5 -right-0 text-[6px]">⚠</span></span>
+                        <span class="p-0.5">6</span>
+                        <span class="p-0.5">7</span>
+                        <span class="p-0.5">8</span>
+                        <span class="p-0.5">9</span>
+
+                        <span class="p-0.5">10</span>
+                        <span class="p-0.5">11</span>
+                        <span class="p-0.5">12</span>
+                        <span class="p-0.5 font-bold bg-[#8E867E] text-white rounded">13</span>
+                        <span class="p-0.5">14</span>
+                        <span class="p-0.5">15</span>
+                        <span class="p-0.5 relative">16<span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-[#8E867E] rounded-full"></span></span>
+
+                        <span class="p-0.5">17</span>
+                        <span class="p-0.5">18</span>
+                        <span class="p-0.5">19</span>
+                        <span class="p-0.5">20</span>
+                        <span class="p-0.5 relative">21<span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-[#8E867E] rounded-full"></span></span>
+                        <span class="p-0.5">22</span>
+                        <span class="p-0.5">23</span>
+
+                        <span class="p-0.5">24</span>
+                        <span class="p-0.5">25</span>
+                        <span class="p-0.5">26</span>
+                        <span class="p-0.5">27</span>
+                        <span class="p-0.5 relative">28<span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-[#8E867E] rounded-full"></span></span>
+                        <span class="p-0.5">29</span>
+                        <span class="p-0.5">30</span>
+
+                        <span class="p-0.5">31</span>
+                        <span class="p-0.5 text-stone-300">1</span>
+                        <span class="p-0.5 text-stone-300">2</span>
+                        <span class="p-0.5 text-stone-300">3</span>
+                        <span class="p-0.5 text-stone-300">4</span>
+                        <span class="p-0.5 text-stone-300">5</span>
+                        <span class="p-0.5 text-stone-300">6</span>
+                    </div>
+
+                    <div class="mt-auto pt-2 border-t border-stone-100 flex items-center justify-around text-[9px] text-stone-400 shrink-0">
+                        <div class="flex items-center gap-1">
+                            <span class="w-1 h-1 bg-[#8E867E] rounded-full"></span>
+                            <span>未来DDL</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <span class="text-red-500 text-[9px]">⚠</span>
+                            <span>已逾期</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 bg-[#8E867E] rounded-sm"></span>
+                            <span>今天</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 05 当日安排 -->
+                <div class="col-span-7 bg-white rounded-2xl p-4 shadow-sm border border-stone-100 flex flex-col min-h-0">
+                    <div class="flex justify-between items-center mb-3 shrink-0">
+                        <div class="flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span>
+                            <h3 class="text-xs font-semibold uppercase tracking-wider text-stone-400">05 / 当日安排</h3>
+                        </div>
+                        <span class="text-[10px] italic text-stone-400">5 月 13 日 · 仅展示</span>
+                    </div>
+                    <div class="space-y-2 soft-scroll overflow-y-auto flex-1 min-h-0">
+
+                        <!-- 早上 -->
+                        <div class="flex items-start gap-3 p-1.5 hover:bg-stone-50 rounded-lg transition">
+                            <span class="text-[11px] tracking-wide text-stone-500 w-10 mt-1 font-medium">早上</span>
+                            <div class="flex-1 space-y-1">
+                                <div class="bg-stone-50 border border-stone-100 rounded-lg px-2.5 py-1">
+                                    <span class="text-[9px] text-[#8E867E]">算法模块功能优化</span>
+                                    <p class="text-xs text-stone-700">搭建本地基准测试环境</p>
+                                </div>
+                                <div class="bg-stone-50 border border-stone-100 rounded-lg px-2.5 py-1">
+                                    <span class="text-[9px] text-[#8E867E]">期末复习计划</span>
+                                    <p class="text-xs text-stone-700">看完线性代数第四章笔记</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 下午 -->
+                        <div class="flex items-start gap-3 p-1.5 hover:bg-stone-50 rounded-lg transition">
+                            <span class="text-[11px] tracking-wide text-stone-500 w-10 mt-1 font-medium">下午</span>
+                            <div class="flex-1 space-y-1">
+                                <div class="bg-stone-50 border border-stone-100 rounded-lg px-2.5 py-1">
+                                    <span class="text-[9px] text-[#8E867E]">算法模块功能优化</span>
+                                    <p class="text-xs text-stone-700">完成数据源预处理代码性能重构</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 晚上 -->
+                        <div class="flex items-start gap-3 p-1.5 hover:bg-stone-50 rounded-lg transition">
+                            <span class="text-[11px] tracking-wide text-stone-500 w-10 mt-1 font-medium">晚上</span>
+                            <div class="flex-1">
+                                <div class="border border-dashed border-stone-200 rounded-lg px-2.5 py-1.5 text-xs text-stone-400 italic text-center">
+                                    暂无规划 · 自由呼吸时间
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+</body>
+</html>
